@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "278992537060",
+    "project_id": "zentrix-22d87",
+    "storage_bucket": "zentrix-22d87.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278992537060:android:f40b748d1446d544f273f1",
+        "android_client_info": {
+          "package_name": "com.example.zentrix"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBn5K-NxS1l6dZdqa0vP-6ANhkaGyH3H4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
