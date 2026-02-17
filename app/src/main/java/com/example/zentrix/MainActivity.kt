@@ -6,26 +6,25 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.example.zentrix.domain.model.Screen
-import com.example.zentrix.features.auth.home.HomeScreen
-import com.example.zentrix.features.auth.home.MainScaffold
+import com.example.zentrix.features.auth.AuthState
+import com.example.zentrix.features.auth.AuthViewModel
+import com.example.zentrix.features.landing.home.HomeScreen
+import com.example.zentrix.features.landing.home.MainScaffold
 import com.example.zentrix.features.auth.login.SignInScreen
 import com.example.zentrix.features.auth.signup.SignupScreen
 import com.example.zentrix.ui.theme.ZentrixTheme
@@ -41,8 +40,33 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             ZentrixTheme {
+
+                val authViewModel :AuthViewModel = viewModel()
+                val authState by authViewModel.authState.collectAsStateWithLifecycle()
                 val windowSizeClass = calculateWindowSizeClass(this)
-                val navStack = remember { mutableStateListOf<Screen>(Screen.Login) }
+
+
+                val initialScreen = when(authState){
+                    is AuthState.Authenticated -> Screen.Home
+                    is AuthState.Unauthenticated -> Screen.Login
+                }
+                val navStack = remember(initialScreen) { mutableStateListOf(initialScreen) }
+
+
+                LaunchedEffect(authState) {
+                    when(authState){
+                        is AuthState.Authenticated -> {
+                            if(navStack.last() != Screen.Home) {
+                                navStack.clear()
+                                navStack.add(Screen.Home)
+                            }
+                        }
+                        is AuthState.Unauthenticated -> {
+                            navStack.clear()
+                            navStack.add(Screen.Login)
+                        }
+                    }
+                }
 
                 NavDisplay(
                     backStack = navStack,
@@ -56,24 +80,23 @@ class MainActivity : ComponentActivity() {
                                 SignInScreen(
                                     onNavigateToSignup = {navStack.add(Screen.Signup)},
                                     onAuthSuccess = {
-                                        navStack.clear()
-                                        navStack.add(Screen.Home)
+                                        authViewModel.checkAuthState()
                                     }
                                 )
                             }
                             is Screen.Signup -> NavEntry(screen){
                                 SignupScreen(
+                                    onNavigateToLogin = {navStack.removeLast()},
                                     onNavigateBack = {navStack.removeLast()},
                                     onAuthSuccess = {
-                                        navStack.clear()
-                                        navStack.add(Screen.Home)
+                                        authViewModel.checkAuthState()
                                     }
                                 )
                             }
 
                             is Screen.Home -> NavEntry(screen){
                                 MainScaffold(windowSize = windowSizeClass.widthSizeClass) {_,hazeState ->
-                                    HomeScreen(hazeState)
+                                    HomeScreen(hazeState , onSignOut = {authViewModel.signOut()})
                                 }
                             }
                             else -> NavEntry(screen){
@@ -84,21 +107,5 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ZentrixTheme {
-        Greeting("Android")
     }
 }

@@ -14,6 +14,7 @@ import javax.inject.Inject
 class SignupViewModel @Inject constructor(
     private val validateSignupUseCase : ValidateSignupUseCase
 ) : ViewModel( ){
+    var fullName by mutableStateOf("")
     var email by mutableStateOf("")
     var password by mutableStateOf("")
     var confirmPassword by mutableStateOf("")
@@ -25,7 +26,7 @@ class SignupViewModel @Inject constructor(
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
-            validateSignupUseCase(email,password,confirmPassword)
+            validateSignupUseCase(fullName, email,password,confirmPassword)
                 .onSuccess { onSuccess() }
                 .onFailure { errorMessage = it.message }
         }

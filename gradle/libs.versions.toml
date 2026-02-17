@@ -25,6 +25,7 @@ composeIcons = "1.7.8"
 firebaseBom = "34.9.0"
 googleServices = "4.4.4"
 navigation3 = "1.1.0-alpha04"
+foundation = "1.10.3"
 
 [libraries]
 # Firebase BoM
@@ -88,6 +89,7 @@ androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-
 
 # Navigation 3 ViewModel integration (Highly recommended)
 androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "lifecycleRuntimeKtx" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

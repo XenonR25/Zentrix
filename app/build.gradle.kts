@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation("androidx.compose.material3:material3-window-size-class:1.2.1")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation(libs.androidx.compose.foundation)
     debugImplementation("androidx.compose.ui:ui-tooling")
 
 
