@@ -1,11 +1,36 @@
 package com.example.zentrix.domain.model
 
-import androidx.compose.ui.graphics.Color
+import com.google.gson.annotations.SerializedName
+
 
 data class Product(
-    val name: String, val brand: String, val price: String,
-    val originalPrice: String?, val rating: Float,
-    val cardGradient: List<Color>, val accentColor: Color,
-    val isFavorite: Boolean = false, val isNew: Boolean = false,
-    val discount: String? = null
+    @SerializedName("name")
+    val name : String,
+    @SerializedName("brand")
+    val brand : String,
+    @SerializedName("price")
+    val price : String,
+    @SerializedName("originalPrice")
+    val originalPrice : String? = null,
+    @SerializedName("rating")
+    val rating : Float,
+    @SerializedName("imageUrl")
+    val imageUrl : String,
+    @SerializedName("isFavorite")
+    val isFavorite : Boolean = false,
+    @SerializedName("isNew")
+    val isNew : Boolean = false,
+    @SerializedName("discount")
+    val discount : String? = null
 )
+
+data class productRecord(
+    @SerializedName("products")
+    val products : List<Product>
+)
+
+data class JsonBinResponse(
+    @SerializedName("record")
+    val record : productRecord
+)
+

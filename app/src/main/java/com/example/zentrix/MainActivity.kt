@@ -9,22 +9,20 @@ import androidx.annotation.RequiresApi
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.example.zentrix.domain.model.Screen
+import com.example.zentrix.features.MainScaffold
 import com.example.zentrix.features.auth.AuthState
 import com.example.zentrix.features.auth.AuthViewModel
 import com.example.zentrix.features.landing.home.HomeScreen
-import com.example.zentrix.features.landing.home.MainScaffold
 import com.example.zentrix.features.auth.login.SignInScreen
 import com.example.zentrix.features.auth.signup.SignupScreen
 import com.example.zentrix.ui.theme.ZentrixTheme
@@ -41,7 +39,7 @@ class MainActivity : ComponentActivity() {
 
             ZentrixTheme {
 
-                val authViewModel :AuthViewModel = viewModel()
+                val authViewModel :AuthViewModel = hiltViewModel()
                 val authState by authViewModel.authState.collectAsStateWithLifecycle()
                 val windowSizeClass = calculateWindowSizeClass(this)
 

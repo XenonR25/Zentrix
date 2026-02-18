@@ -55,10 +55,28 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.material3)
-    implementation("androidx.compose.material3:material3-window-size-class:1.2.1")
-    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation(libs.androidx.compose.material3.window.size.class1)
+    implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.compose.foundation)
-    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation(libs.androidx.ui.tooling)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+
+    // OkHttp (for logging)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+
+    // Coil for image loading
+    implementation(libs.coil.compose)
+
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.android.v173)
+
+    // Lifecycle
+    implementation(libs.androidx.lifecycle.viewmodel.compose.v270)
+    implementation(libs.androidx.lifecycle.runtime.compose.v270)
 
 
     // Hilt

@@ -1,5 +1,6 @@
 package com.example.zentrix.features.landing.home
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -40,16 +41,13 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.ShoppingCartCheckout
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.ShoppingBag
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -72,6 +70,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -90,6 +89,7 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlin.math.abs
+import coil.compose.AsyncImage
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Obsidian Design Tokens
@@ -122,34 +122,7 @@ private val categories = listOf(
     Category("Denim", "🧥")
 )
 
-private val products = listOf(
-    Product(
-        "Linen Overshirt", "ARKET", "£89", "£120", 4.7f,
-        listOf(Color(0xFF1A1820), Color(0xFF141218)), ObsidianTheme.accent
-    ),
-    Product("Air Foam Runner", "ADIDAS", "£130", null, 4.5f,
-        listOf(Color(0xFF0F1A28), Color(0xFF0A1018)), ObsidianTheme.gold, isNew = true),
-    Product("Merino Rollneck", "COS", "£95", "£145", 4.8f,
-        listOf(Color(0xFF1C1820), Color(0xFF141018)), ObsidianTheme.accent, discount = "-35%"),
-    Product("Mini Crossbody", "& OTHER STORIES", "£65", null, 4.3f,
-        listOf(Color(0xFF1A1428), Color(0xFF110E1A)), ObsidianTheme.accent, isNew = true),
-    Product("Slim Chino", "UNIQLO", "£49", "£69", 4.6f,
-        listOf(Color(0xFF0E1620), Color(0xFF080E14)), Color(0xFF5BA3D0), discount = "-29%"),
-    Product("Ceramic Watch", "MVMT", "£210", null, 4.9f,
-        listOf(Color(0xFF201818), Color(0xFF140E0E)), ObsidianTheme.gold),
-    Product("Canvas Tote", "NORSE PROJECTS", "£55", null, 4.4f,
-        listOf(Color(0xFF101A10), Color(0xFF0A100A)), ObsidianTheme.green, isNew = true),
-    Product("Waffle Hoodie", "REIGNING CHAMP", "£160", "£200", 4.7f,
-        listOf(Color(0xFF1E1210), Color(0xFF140C0A)), ObsidianTheme.red, discount = "-20%"),
-    Product("Slip-On Loafer", "G.H.BASS", "£115", null, 4.5f,
-        listOf(Color(0xFF141A10), Color(0xFF0C100A)), ObsidianTheme.green),
-    Product("Silk Scarf", "TOTEME", "£120", "£160", 4.8f,
-        listOf(Color(0xFF1A1230), Color(0xFF100A1E)), ObsidianTheme.accent, discount = "-25%"),
-    Product("Puffer Vest", "PATAGONIA", "£175", null, 4.9f,
-        listOf(Color(0xFF0A1830), Color(0xFF060E1C)), Color(0xFF5BA3D0), isNew = true),
-    Product("Raw Denim", "NUDIE JEANS", "£195", "£230", 4.6f,
-        listOf(Color(0xFF101828), Color(0xFF0A1018)), Color(0xFF5BA3D0), discount = "-15%")
-)
+
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -162,36 +135,103 @@ fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCat by remember { mutableIntStateOf(0) }
     val name by viewModel.userName.collectAsStateWithLifecycle()
-    LazyVerticalStaggeredGrid(
-        columns       = StaggeredGridCells.Fixed(2),
-        modifier      = Modifier
-            .fillMaxSize()
-            .background(ObsidianTheme.background)
-            .hazeSource(state = hazeState),          // <-- content behind navbar is blurred
-        contentPadding = PaddingValues(
-            start = 16.dp, end = 16.dp, top = 16.dp, bottom = 110.dp
-        ),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalItemSpacing   = 12.dp
-    ) {
-        item(span = StaggeredGridItemSpan.FullLine) { GreetingHeader(name = name, onSignOut = onSignOut) }
-        item(span = StaggeredGridItemSpan.FullLine) {
-            ObsidianSearchBar(query = searchQuery, onQueryChange = { searchQuery = it })
-        }
-        item(span = StaggeredGridItemSpan.FullLine) { PromotionsPager(promoItems) }
-        item(span = StaggeredGridItemSpan.FullLine) { SectionHeader("Categories") }
 
-        // Single-line horizontal scroll row — eliminates the gap completely
-        item(span = StaggeredGridItemSpan.FullLine) {
-            CategoryChipsRow(
-                categories    = categories,
-                selectedIndex = selectedCat,
-                onSelect      = { selectedCat = it }
-            )
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyVerticalStaggeredGrid(
+            columns = StaggeredGridCells.Fixed(2),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(ObsidianTheme.background)
+                .hazeSource(state = hazeState),
+            contentPadding = PaddingValues(
+                start = 16.dp, end = 16.dp, top = 16.dp, bottom = 110.dp
+            ),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalItemSpacing = 12.dp
+        ) {
+            item(span = StaggeredGridItemSpan.FullLine) {
+                GreetingHeader(name = name, onSignOut = onSignOut)
+            }
+
+            item(span = StaggeredGridItemSpan.FullLine) {
+                ObsidianSearchBar(query = searchQuery, onQueryChange = { searchQuery = it })
+            }
+
+            item(span = StaggeredGridItemSpan.FullLine) {
+                PromotionsPager(promoItems)
+            }
+
+            item(span = StaggeredGridItemSpan.FullLine) {
+                SectionHeader("Categories")
+            }
+
+            item(span = StaggeredGridItemSpan.FullLine) {
+                CategoryChipsRow(
+                    categories = categories,
+                    selectedIndex = selectedCat,
+                    onSelect = { selectedCat = it }
+                )
+            }
+
+            item(span = StaggeredGridItemSpan.FullLine) {
+                SectionHeader("New Arrivals")
+            }
+
+            // Display products from API
+            items(uiState.products.size) { index ->
+                ProductCard(product = uiState.products[index], index = index)
+            }
         }
 
-        item(span = StaggeredGridItemSpan.FullLine) { SectionHeader("New Arrivals") }
-        items(products.size) { index -> ProductCard(product = products[index], index = index) }
+        // Loading indicator
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(ObsidianTheme.background.copy(alpha = 0.7f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = ObsidianTheme.accent)
+            }
+        }
+
+        // Error message
+        uiState.errorMessage?.let { error ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = error,
+                        color = ObsidianTheme.textSecondary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(ObsidianTheme.accent.copy(alpha = 0.15f))
+                            .border(0.5.dp, ObsidianTheme.accent.copy(0.4f), RoundedCornerShape(12.dp))
+                            .clickable { viewModel.retry() }
+                            .padding(horizontal = 24.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            "Retry",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = ObsidianTheme.accent
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -379,6 +419,7 @@ private fun ObsidianSearchBar(query: String, onQueryChange: (String) -> Unit) {
 // Promotions pager
 // ─────────────────────────────────────────────────────────────────────────────
 
+@SuppressLint("FrequentlyChangingValue")
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PromotionsPager(items: List<PromoItem>) {
@@ -459,7 +500,7 @@ private fun PromoCard(item: PromoItem, modifier: Modifier = Modifier) {
 private fun SectionHeader(title: String) {
     Row(Modifier.fillMaxWidth().padding(top = 4.dp), Arrangement.SpaceBetween, Alignment.CenterVertically) {
         Text(title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = ObsidianTheme.textPrimary)
-        Text("See all →", style = MaterialTheme.typography.labelMedium, color = ObsidianTheme.accent,
+        Text("See all", style = MaterialTheme.typography.labelMedium, color = ObsidianTheme.accent,
             modifier = Modifier.clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {})
     }
 }
@@ -517,16 +558,59 @@ fun ProductCard(product: Product, index: Int) {
     val cardHeight = when (index % 3) { 0 -> 245.dp; 1 -> 205.dp; else -> 225.dp }
     val shape      = RoundedCornerShape(22.dp)
 
+    // ─────────────────────────────────────────────────────────────────────
+    // Color palettes — UI concern, not data
+    // ─────────────────────────────────────────────────────────────────────
+    val cardGradients = listOf(
+        listOf(Color(0xFF1A1820), Color(0xFF141218)),  // Deep charcoal
+        listOf(Color(0xFF0F1A28), Color(0xFF0A1018)),  // Navy blue
+        listOf(Color(0xFF1C1820), Color(0xFF141018)),  // Purple-tinted black
+        listOf(Color(0xFF1A1428), Color(0xFF110E1A)),  // Violet dark
+        listOf(Color(0xFF0E1620), Color(0xFF080E14)),  // Steel blue
+        listOf(Color(0xFF201818), Color(0xFF140E0E)),  // Warm brown-black
+        listOf(Color(0xFF101A10), Color(0xFF0A100A)),  // Forest green dark
+        listOf(Color(0xFF1E1210), Color(0xFF140C0A)),  // Rust brown
+        listOf(Color(0xFF141A10), Color(0xFF0C100A)),  // Olive green dark
+        listOf(Color(0xFF1A1230), Color(0xFF100A1E)),  // Deep purple
+        listOf(Color(0xFF0A1830), Color(0xFF060E1C)),  // Ocean blue
+        listOf(Color(0xFF101828), Color(0xFF0A1018))   // Midnight blue
+    )
+
+    val accentColors = listOf(
+        ObsidianTheme.accent,      // Purple
+        ObsidianTheme.gold,        // Gold
+        ObsidianTheme.green,       // Green
+        Color(0xFF5BA3D0),         // Sky blue
+        ObsidianTheme.red,         // Red
+        Color(0xFFE8C05C),         // Warm yellow
+        Color(0xFF4ECCA3),         // Mint
+        Color(0xFFFF6B9D),         // Pink
+    )
+
+    // Select colors based on index — consistent per position
+    val cardGradient = cardGradients[index % cardGradients.size]
+    val accentColor = accentColors[index % accentColors.size]
+
     Box(
-        modifier = Modifier.fillMaxWidth().height(cardHeight).clip(shape)
-            .background(Brush.linearGradient(product.cardGradient))
-            .border(0.8.dp, Brush.linearGradient(listOf(ObsidianTheme.surfaceBorder.copy(0.7f), Color.Transparent)), shape)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(cardHeight)
+            .clip(shape)
+            .border(0.8.dp, Brush.linearGradient(cardGradient), shape)
     ) {
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, product.accentColor.copy(0.07f)))))
+        AsyncImage(model = product.imageUrl,
+            contentDescription = product.name,
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter),
+            contentScale = ContentScale.Crop
+            )
+
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, cardGradient[0].copy(0.6f),cardGradient[1]))))
         Column(Modifier.fillMaxSize().padding(13.dp), verticalArrangement = Arrangement.SpaceBetween) {
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.Top) {
                 when {
-                    product.isNew          -> TagBadge(text = "NEW",           color = product.accentColor)
+                    product.isNew          -> TagBadge(text = "NEW",           color = accentColor)
                     product.discount != null -> TagBadge(text = product.discount, color = ObsidianTheme.red)
                     else                   -> Spacer(Modifier.size(4.dp))
                 }
@@ -540,7 +624,8 @@ fun ProductCard(product: Product, index: Int) {
                 ) {
                     Icon(
                         if (isFav) Icons.Filled.Favorite else Icons.Rounded.FavoriteBorder,
-                        null, tint = if (isFav) ObsidianTheme.red else ObsidianTheme.textSecondary,
+                        null,
+                        tint = if (isFav) ObsidianTheme.red else ObsidianTheme.textSecondary,
                         modifier = Modifier.size(15.dp).scale(favScale)
                     )
                 }
@@ -548,7 +633,7 @@ fun ProductCard(product: Product, index: Int) {
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(product.brand,
                     style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.4.sp, fontSize = 8.5.sp, fontWeight = FontWeight.Bold),
-                    color = product.accentColor.copy(0.85f))
+                    color = accentColor.copy(0.85f))
                 Text(product.name,
                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                     color = ObsidianTheme.textPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -593,25 +678,6 @@ private fun TagBadge(text: String, color: Color) {
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Main scaffold
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-fun MainScaffold(windowSize: WindowWidthSizeClass, content: @Composable (PaddingValues, HazeState) -> Unit) {
-    val hazeState  = rememberHazeState()
-    val isExpanded = windowSize == WindowWidthSizeClass.Expanded
-
-    Box(Modifier.fillMaxSize().background(ObsidianTheme.background)) {
-        Row(Modifier.fillMaxSize()) {
-            if (isExpanded) AdaptiveNavigationRail(hazeState)
-            Box(Modifier.weight(1f)) { content(PaddingValues(), hazeState) }
-        }
-        if (!isExpanded) {
-            FloatingGlassNavBar(hazeState = hazeState, modifier = Modifier.align(Alignment.BottomCenter))
-        }
-    }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Navigation rail (tablet)
@@ -633,95 +699,5 @@ fun AdaptiveNavigationRail(hazeState: HazeState) {
 }
 
 
-private data class NavDestination(
-    val label: String, val filledIcon: ImageVector, val outlineIcon: ImageVector
-)
-
-@Composable
-fun FloatingGlassNavBar(hazeState: HazeState, modifier: Modifier = Modifier) {
-    var selectedNav by remember { mutableIntStateOf(0) }
-
-    val destinations = remember {
-        listOf(
-            NavDestination("Home",    Icons.Filled.Home,         Icons.Outlined.Home),
-            NavDestination("Cart",    Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCartCheckout),
-            NavDestination("Saved",   Icons.Filled.Favorite,     Icons.Outlined.FavoriteBorder),
-            NavDestination("Profile", Icons.Filled.Person,       Icons.Outlined.Person)
-        )
-    }
-
-    val navShape = RoundedCornerShape(30.dp)
-
-    Box(
-        modifier = modifier.padding(horizontal = 20.dp, vertical = 24.dp)
-            .fillMaxWidth().height(72.dp)
-            .graphicsLayer{shadowElevation =0f} // there will be no system shadow
-    ){
-        Box(
-            modifier = Modifier.fillMaxSize().clip(navShape).background(
-                Brush.radialGradient(
-                    colors = listOf(ObsidianTheme.accent.copy(alpha = 0.19f), Color.Transparent),
-                    radius = 600f)
-            )
-        )
-        Box(
-           modifier = Modifier
-               .fillMaxSize()
-               .clip(navShape)
-               .hazeEffect(state = hazeState, style = obsidianGlassStyle())
-               .border(width = 0.8.dp,
-                   brush = Brush.verticalGradient(listOf(Color.White.copy(0.14f),Color.White.copy(0.02f)))
-                   , shape = navShape
-               )
 
 
-        ) {
-            Row(
-                modifier              = Modifier.fillMaxSize().padding(horizontal = 6.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment     = Alignment.CenterVertically
-            ) {
-                destinations.forEachIndexed { index, dest ->
-                    NavBarItem(
-                        destination = dest,
-                        isSelected  = selectedNav == index,
-                        onClick     = { selectedNav = index }
-                    )
-                }
-            }
-        }
-    }
-
-}
-
-@Composable
-private fun NavBarItem(destination: NavDestination, isSelected: Boolean, onClick: () -> Unit) {
-    val iconColor  by animateColorAsState(if (isSelected) ObsidianTheme.accent else ObsidianTheme.textSecondary, tween(200), label = "")
-    val labelColor by animateColorAsState(if (isSelected) ObsidianTheme.accent else ObsidianTheme.textMuted, tween(200), label = "")
-    val iconScale  by animateFloatAsState(if (isSelected) 1.12f else 1f, spring(stiffness = Spring.StiffnessMedium), label = "")
-
-    Column(
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { onClick() }
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(3.dp)
-    ) {
-        Icon(
-            imageVector        = if (isSelected) destination.filledIcon else destination.outlineIcon,
-            contentDescription = destination.label,
-            tint               = iconColor,
-            modifier           = Modifier.size(24.dp).scale(iconScale)
-        )
-        Text(
-            text      = destination.label,
-            style     = MaterialTheme.typography.labelSmall.copy(
-                fontSize   = 10.sp,
-                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-            ),
-            color     = labelColor,
-            textAlign = TextAlign.Center
-        )
-    }
-}

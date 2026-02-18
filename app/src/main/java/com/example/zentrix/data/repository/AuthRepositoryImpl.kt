@@ -1,6 +1,6 @@
 package com.example.zentrix.data.repository
 
-import com.example.zentrix.data.remote.UserModel
+import com.example.zentrix.domain.model.UserModel
 import com.example.zentrix.domain.repository.AuthRepository
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthResult

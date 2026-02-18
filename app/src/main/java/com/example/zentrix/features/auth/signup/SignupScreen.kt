@@ -55,7 +55,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.zentrix.core.designsystem.GlassButton
 import com.example.zentrix.core.designsystem.GlassButtonVariant
 import com.example.zentrix.core.designsystem.GlassCard

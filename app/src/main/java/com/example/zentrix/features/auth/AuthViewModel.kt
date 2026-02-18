@@ -2,8 +2,10 @@ package com.example.zentrix.features.auth
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
 sealed class AuthState{
 //    data object Loading : AuthState()
@@ -11,7 +13,8 @@ sealed class AuthState{
     data class Authenticated(val uid : String) : AuthState()
 }
 
-class AuthViewModel : ViewModel() {
+@HiltViewModel
+class AuthViewModel @Inject constructor() : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
 
 //    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
