@@ -72,7 +72,7 @@ dependencies {
     implementation(libs.coil.compose)
 
     // Coroutines
-    implementation(libs.kotlinx.coroutines.android.v173)
+    implementation(libs.kotlinx.coroutines)
 
     // Lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.compose.v270)

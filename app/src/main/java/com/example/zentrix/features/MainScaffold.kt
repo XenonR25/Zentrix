@@ -136,7 +136,7 @@ fun FloatingGlassNavBar(hazeState: HazeState, modifier: Modifier = Modifier) {
 @Composable
 private fun NavBarItem(destination: NavDestination, isSelected: Boolean, onClick: () -> Unit) {
     val iconColor  by animateColorAsState(if (isSelected) ObsidianTheme.accent else ObsidianTheme.textSecondary, tween(200), label = "")
-    val labelColor by animateColorAsState(if (isSelected) ObsidianTheme.accent else ObsidianTheme.textMuted, tween(200), label = "")
+    val labelColor by animateColorAsState(if (isSelected) ObsidianTheme.accent else ObsidianTheme.textSecondary, tween(200), label = "")
     val iconScale  by animateFloatAsState(if (isSelected) 1.12f else 1f, spring(stiffness = Spring.StiffnessMedium), label = "")
 
     Column(

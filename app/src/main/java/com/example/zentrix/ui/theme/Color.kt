@@ -18,7 +18,7 @@ object ObsidianTheme {
     val accent          = Color(0xFF7B6CF6)
     val accentSoft      = Color(0xFF3D3466)
     val textPrimary     = Color(0xFFF0EFF8)
-    val textSecondary   = Color(0xFF8B8A9B)
+    val textSecondary   = Color(0xFFB1B1BB)
     val textMuted       = Color(0xFF4E4D5C)
     val red             = Color(0xFFE8526A)
     val gold            = Color(0xFFCBA94E)

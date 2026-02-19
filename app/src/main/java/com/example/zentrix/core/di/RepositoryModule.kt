@@ -1,11 +1,13 @@
 package com.example.zentrix.core.di
 
 import com.example.zentrix.data.repository.AuthRepositoryImpl
+import com.example.zentrix.data.repository.FirestoreRepository
 import com.example.zentrix.data.repository.ProductRepositoryImpl
 import com.example.zentrix.domain.repository.AuthRepository
 import com.example.zentrix.domain.repository.ProductRepository
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
@@ -24,4 +26,10 @@ abstract class RepositoryModule {
     abstract fun bindProductRepository(
         productRepositoryImpl: ProductRepositoryImpl
     ): ProductRepository
+
+    @Provides
+    @Singleton
+    fun provideFirestoreRepository(): FirestoreRepository {
+        return FirestoreRepository()
+    }
 }
