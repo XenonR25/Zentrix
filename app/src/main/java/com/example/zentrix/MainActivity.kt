@@ -147,8 +147,8 @@ class MainActivity : ComponentActivity() {
                                         navStack.clear()
                                         navStack.add(destination)
                                     }
-                                    }) { _, hazeState ->
-                                    CartScreen(hazeState = hazeState)
+                                    }) { paddingValues, hazeState -> // Capture the padding values
+                                    CartScreen(paddingValues = paddingValues)
 
                             }
                             }

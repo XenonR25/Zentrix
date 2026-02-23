@@ -27,6 +27,10 @@ abstract class RepositoryModule {
         productRepositoryImpl: ProductRepositoryImpl
     ): ProductRepository
 
+}
+@Module
+@InstallIn(SingletonComponent::class)
+object FirestoreModule{
     @Provides
     @Singleton
     fun provideFirestoreRepository(): FirestoreRepository {

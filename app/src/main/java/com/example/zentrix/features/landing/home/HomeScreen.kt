@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,7 +27,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
@@ -40,9 +38,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Search
@@ -61,6 +56,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -188,8 +184,13 @@ fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() 
             }
 
             // Display products from API
-            items(uiState.products.size) { index ->
-                ProductCard(product = uiState.products[index], index = index)
+            items(count = uiState.products.size, key = {index -> uiState.products[index].id}) { index ->
+                ProductCard(
+                    product = uiState.products[index],
+                    index = index,
+                    onClick = {onProductClick(uiState.products[index])},
+                    favoritesViewModel = favoritesViewModel
+                    )
             }
         }
 
@@ -208,92 +209,119 @@ fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() 
         // Error message
         uiState.errorMessage?.let { error ->
             Box(
-                modifier = Modifier.fillMaxSize().hazeSource(hazeState) // make content behind blurrable
-            ){
-                Box(
-                    modifier = Modifier.fillMaxSize().hazeEffect(
-                        state = hazeState,
-                        style = HazeStyle(tint = HazeTint(ObsidianTheme.background.copy(0.85f)),
-                                          blurRadius = 28.dp,
-                                          noiseFactor = 0.1f
-                            )
-                    )
-                )
-                Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.4f))  // Dark scrim overlay
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { /* Dismiss on backdrop click if needed */ },
+                contentAlignment = Alignment.Center
+            ) {
+                // Error dialog card
+                Surface(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp)
-                    ,
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth(0.85f)
+                        .wrapContentHeight(),
+                    shape = RoundedCornerShape(28.dp),
+                    color = Color.Transparent,
+                    shadowElevation = 24.dp
                 ) {
-                    Surface(
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
-                        shape = RoundedCornerShape(24.dp),
-                        color = Color.Transparent
-                    ){
-                        Box(
-                            modifier = Modifier
-                                .hazeEffect(state = hazeState,
-                                    style = HazeStyle(
-                                        tint = HazeTint(ObsidianTheme.surfaceElevated.copy(0.2f)),
-                                        blurRadius = 24.dp,
-                                        noiseFactor = 0.08f
-                        ))
-                                .border(width = 0.8.dp,
-                                brush = Brush.verticalGradient(
-                                    listOf(Color.White.copy(0.25f),Color.White.copy(0.05f))
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        ObsidianTheme.surfaceElevated.copy(0.95f),
+                                        ObsidianTheme.surfaceElevated.copy(0.98f)
+                                    )
                                 )
-                                    ,shape = RoundedCornerShape(24.dp)
-
-                                ).padding(32.dp)
-                        ){
-
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            )
+                            .border(
+                                width = 1.dp,
+                                brush = Brush.verticalGradient(
+                                    listOf(
+                                        Color.White.copy(0.3f),
+                                        Color.White.copy(0.05f)
+                                    )
+                                ),
+                                shape = RoundedCornerShape(28.dp)
+                            )
+                            .padding(32.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(20.dp)
+                        ) {
+                            // Error icon with circular background
+                            Box(
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .clip(CircleShape)
+                                    .background(ObsidianTheme.red.copy(0.15f))
+                                    .border(1.dp, ObsidianTheme.red.copy(0.3f), CircleShape),
+                                contentAlignment = Alignment.Center
                             ) {
-                                // Error icon
                                 Icon(
                                     Icons.Rounded.ErrorOutline,
                                     contentDescription = null,
                                     tint = ObsidianTheme.red,
-                                    modifier = Modifier.size(56.dp)
+                                    modifier = Modifier.size(40.dp)
                                 )
+                            }
 
-                                // Error title
+                            // Error title
+                            Text(
+                                text = "Connection Error",
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = ObsidianTheme.textPrimary
+                            )
+
+                            // Error message
+                            Text(
+                                text = error,
+                                color = ObsidianTheme.textSecondary,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                lineHeight = 20.sp
+                            )
+
+                            // Retry button
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .width(24.dp)
+                                    .height(48.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(ObsidianTheme.accent.copy(0.2f))
+                                    .border(0.7.dp , ObsidianTheme.accent.copy(0.6f) , RoundedCornerShape(16.dp))
+                                    .clickable(
+                                        indication = null,
+                                        interactionSource = remember { MutableInteractionSource() }
+                                    ) { viewModel.retry() },
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Text(
-                                    text = "Oops!",
-                                    style = MaterialTheme.typography.titleLarge.copy(
+                                    "Retry",
+                                    style = MaterialTheme.typography.labelLarge.copy(
                                         fontWeight = FontWeight.Bold
                                     ),
-                                    color = ObsidianTheme.textPrimary
+                                    color = ObsidianTheme.accent
                                 )
-                                Text(
-                                    text = error,
-                                    color = ObsidianTheme.textSecondary,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    textAlign = TextAlign.Center
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(ObsidianTheme.accent.copy(alpha = 0.15f))
-                                        .border(0.5.dp, ObsidianTheme.accent.copy(0.4f), RoundedCornerShape(12.dp))
-                                        .clickable (
-                                            indication = null,
-                                            interactionSource = remember { MutableInteractionSource() }
-                                        ) { viewModel.retry() }
-                                        .padding(horizontal = 24.dp, vertical = 12.dp)
-                                ) {
-                                    Text(
-                                        "Retry",
-                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                        color = ObsidianTheme.accent
-                                    )
-                                }
                             }
+
+                            // Cancel/Dismiss text button (optional)
+                            Text(
+                                text = "Dismiss",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = ObsidianTheme.textMuted,
+                                modifier = Modifier.clickable(
+                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() }
+                                ) { /* Clear error state */ }
+                            )
                         }
                     }
                 }
@@ -573,7 +601,7 @@ private fun SectionHeader(title: String) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ✅ Category chips — horizontal scroll Row, single line, zero wrapping
+//Category chips — horizontal scroll Row, single line, zero wrapping
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
@@ -620,8 +648,10 @@ private fun CategoryChipsRow(categories: List<Category>, selectedIndex: Int, onS
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-fun ProductCard(product: Product, index: Int) {
-    var isFav by remember { mutableStateOf(product.isFavorite) }
+fun ProductCard(product: Product, index: Int, onClick : () -> Unit,    favoritesViewModel: FavoritesViewModel = hiltViewModel()) {
+    val favorites by favoritesViewModel.favorites.collectAsStateWithLifecycle()
+
+    val isFav = favorites.any{it.id == product.id}
     val cardHeight = when (index % 3) { 0 -> 245.dp; 1 -> 205.dp; else -> 225.dp }
     val shape      = RoundedCornerShape(22.dp)
 
@@ -664,6 +694,7 @@ fun ProductCard(product: Product, index: Int) {
             .height(cardHeight)
             .clip(shape)
             .border(0.8.dp, Brush.linearGradient(cardGradient), shape)
+            .clickable{onClick()}
     ) {
         AsyncImage(model = product.imageUrl,
             contentDescription = product.name,
@@ -673,7 +704,8 @@ fun ProductCard(product: Product, index: Int) {
             contentScale = ContentScale.Crop
             )
 
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, cardGradient[0].copy(0.6f),cardGradient[1]))))
+        Box(Modifier.fillMaxSize()
+            .background(Brush.verticalGradient(listOf(Color.Transparent, cardGradient[0].copy(0.6f),cardGradient[1]))))
         Column(Modifier.fillMaxSize().padding(13.dp), verticalArrangement = Arrangement.SpaceBetween) {
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.Top) {
                 when {
@@ -686,7 +718,10 @@ fun ProductCard(product: Product, index: Int) {
                     modifier = Modifier.size(30.dp).clip(CircleShape)
                         .background(ObsidianTheme.surfaceElevated.copy(0.8f))
                         .border(0.5.dp, ObsidianTheme.surfaceBorder, CircleShape)
-                        .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { isFav = !isFav },
+                        .clickable(indication = null, interactionSource = remember { MutableInteractionSource() })
+                        {
+                            favoritesViewModel.toggleFavorite(product) //toggles favorite
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -697,7 +732,8 @@ fun ProductCard(product: Product, index: Int) {
                     )
                 }
             }
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
                 Text(product.brand,
                     style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.4.sp, fontSize = 8.5.sp, fontWeight = FontWeight.Bold),
                     color = accentColor.copy(0.85f))
@@ -705,11 +741,16 @@ fun ProductCard(product: Product, index: Int) {
                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                     color = ObsidianTheme.textPrimary, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(4.dp))
-                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth(),
+                    Arrangement.SpaceBetween,
+                    Alignment.CenterVertically
+                )
+                {
                     Column {
                         Text(product.price,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.ExtraBold),
                             color = ObsidianTheme.textPrimary)
+
                         product.originalPrice?.let {
                             Text(it, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = ObsidianTheme.textMuted)
                         }

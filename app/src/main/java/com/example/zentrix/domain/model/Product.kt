@@ -21,10 +21,16 @@ data class Product(
     @SerializedName("isNew")
     val isNew : Boolean = false,
     @SerializedName("discount")
-    val discount : String? = null,
+    val discount : String? = null
+) {
+    val id: String
+        get() = if (brand.isNotBlank() && name.isNotBlank()) {
+            "${brand}_${name}".replace(" ", "_").lowercase()
+        } else {
+            "product_${hashCode()}"
+        }
 
-    val id:String = "${brand}_${name}".replace(" ","_").lowercase()
-)
+}
 data class CartItem(
     val product : Product,
     val quantity : Int = 1

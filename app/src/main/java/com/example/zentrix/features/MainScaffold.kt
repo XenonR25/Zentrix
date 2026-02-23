@@ -65,9 +65,12 @@ import dev.chrisbanes.haze.rememberHazeState
 fun MainScaffold(windowSize: WindowWidthSizeClass,
                  currentScreen: Screen,
                  onNavigate: (Screen) -> Unit,
-                 content: @Composable (PaddingValues, HazeState) -> Unit) {
+                 content: @Composable (PaddingValues, HazeState) -> Unit)
+{
     val hazeState  = rememberHazeState()
     val isExpanded = windowSize == WindowWidthSizeClass.Expanded
+
+    val paddingValues = if(!isExpanded) 114.dp else 0.dp
 
     val selectedNavIndex = when(currentScreen){
         is Screen.Home -> 0
@@ -79,15 +82,9 @@ fun MainScaffold(windowSize: WindowWidthSizeClass,
 
     Box(Modifier.fillMaxSize().background(ObsidianTheme.background)) {
         Row(Modifier.fillMaxSize()) {
-            if (isExpanded) AdaptiveNavigationRail(hazeState,selectedNavIndex,onNavigate = { index->
-                when(index){
-                    0 -> onNavigate(Screen.Home)
-                    1 -> onNavigate(Screen.Cart)
-                    2 -> onNavigate(Screen.Favorites)
-                    3 -> onNavigate(Screen.Profile)
-                }
-            })
-            Box(Modifier.weight(1f)) { content(PaddingValues(), hazeState) }
+            if (isExpanded) AdaptiveNavigationRail(hazeState)
+
+            Box(Modifier.weight(1f)) { content(PaddingValues(bottom = paddingValues), hazeState) }
         }
         if (!isExpanded) {
             FloatingGlassNavBar(hazeState = hazeState, modifier = Modifier.align(Alignment.BottomCenter),
@@ -126,13 +123,13 @@ fun FloatingGlassNavBar(hazeState: HazeState, modifier: Modifier = Modifier,
     Box(
         modifier = modifier.padding(horizontal = 20.dp, vertical = 50.dp)
             .fillMaxWidth().height(64.dp)
-            .graphicsLayer{shadowElevation = 60f} // there will be no system shadow
+            .graphicsLayer{shadowElevation = 30f} // there will be no system shadow
     ){
         Box(
             modifier = Modifier.fillMaxSize().clip(navShape).background(
                 Brush.radialGradient(
                     colors = listOf(ObsidianTheme.accent.copy(alpha = 0.7f), Color.Transparent),
-                    radius = 800f)
+                    radius = 300f)
             )
         )
         Box(
@@ -201,7 +198,7 @@ private fun NavBarItem(destination: NavDestination, isSelected: Boolean, onClick
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-fun AdaptiveNavigationRail(hazeState: HazeState, selectedNavIndex : Int) {
+fun AdaptiveNavigationRail(hazeState: HazeState) {
     NavigationRail(
         modifier       = Modifier.fillMaxHeight().hazeEffect(hazeState, obsidianGlassStyle()).background(Color.Transparent),
         containerColor = Color.Transparent,

@@ -46,19 +46,23 @@ class FavoritesViewModel @Inject constructor(
         val currentFavorites = _favorites.value.toMutableList()
         val existingProduct = currentFavorites.find { it.id == product.id }
 
-        viewModelScope.launch {
+
 
             if(existingProduct != null){
                 currentFavorites.remove(existingProduct)
                 _favorites.value = currentFavorites
-                repository.removeFavorite(product.id)
+                viewModelScope.launch {
+                    repository.removeFavorite(product.id)
+                }
             } else {
                 currentFavorites.add(product)
                 _favorites.value = currentFavorites
-                repository.addFavorite(product)
+                viewModelScope.launch {
+                    repository.addFavorite(product)
+                }
 
             }
-        }
+
 
     }
 
