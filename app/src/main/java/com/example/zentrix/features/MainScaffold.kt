@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,8 +30,11 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCartCheckout
+import androidx.compose.material.icons.rounded.ShoppingBag
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -51,24 +55,52 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.zentrix.core.designsystem.obsidianGlassStyle
-import com.example.zentrix.features.landing.home.AdaptiveNavigationRail
+import com.example.zentrix.domain.model.Screen
 import com.example.zentrix.ui.theme.ObsidianTheme
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.rememberHazeState
 
 @Composable
-fun MainScaffold(windowSize: WindowWidthSizeClass, content: @Composable (PaddingValues, HazeState) -> Unit) {
+fun MainScaffold(windowSize: WindowWidthSizeClass,
+                 currentScreen: Screen,
+                 onNavigate: (Screen) -> Unit,
+                 content: @Composable (PaddingValues, HazeState) -> Unit) {
     val hazeState  = rememberHazeState()
     val isExpanded = windowSize == WindowWidthSizeClass.Expanded
 
+    val selectedNavIndex = when(currentScreen){
+        is Screen.Home -> 0
+        is Screen.Cart -> 1
+        is Screen.Favorites -> 2
+        is Screen.Profile -> 3
+        else -> 0
+    }
+
     Box(Modifier.fillMaxSize().background(ObsidianTheme.background)) {
         Row(Modifier.fillMaxSize()) {
-            if (isExpanded) AdaptiveNavigationRail(hazeState)
+            if (isExpanded) AdaptiveNavigationRail(hazeState,selectedNavIndex,onNavigate = { index->
+                when(index){
+                    0 -> onNavigate(Screen.Home)
+                    1 -> onNavigate(Screen.Cart)
+                    2 -> onNavigate(Screen.Favorites)
+                    3 -> onNavigate(Screen.Profile)
+                }
+            })
             Box(Modifier.weight(1f)) { content(PaddingValues(), hazeState) }
         }
         if (!isExpanded) {
-            FloatingGlassNavBar(hazeState = hazeState, modifier = Modifier.align(Alignment.BottomCenter))
+            FloatingGlassNavBar(hazeState = hazeState, modifier = Modifier.align(Alignment.BottomCenter),
+                selectedIndex = selectedNavIndex,
+                onNavigate = {index->
+                    when(index){
+                        0 -> onNavigate(Screen.Home)
+                        1 -> onNavigate(Screen.Cart)
+                        2 -> onNavigate(Screen.Favorites)
+                        3 -> onNavigate(Screen.Profile)
+                    }
+                }
+                )
         }
     }
 }
@@ -77,8 +109,8 @@ private data class NavDestination(
 )
 
 @Composable
-fun FloatingGlassNavBar(hazeState: HazeState, modifier: Modifier = Modifier) {
-    var selectedNav by remember { mutableIntStateOf(0) }
+fun FloatingGlassNavBar(hazeState: HazeState, modifier: Modifier = Modifier,
+                        selectedIndex:Int,onNavigate:(Int)->Unit) {
 
     val destinations = remember {
         listOf(
@@ -123,8 +155,8 @@ fun FloatingGlassNavBar(hazeState: HazeState, modifier: Modifier = Modifier) {
                 destinations.forEachIndexed { index, dest ->
                     NavBarItem(
                         destination = dest,
-                        isSelected  = selectedNav == index,
-                        onClick     = { selectedNav = index }
+                        isSelected  = selectedIndex == index,
+                        onClick     = { onNavigate(index) }
                     )
                 }
             }
@@ -162,5 +194,23 @@ private fun NavBarItem(destination: NavDestination, isSelected: Boolean, onClick
             color     = labelColor,
             textAlign = TextAlign.Center
         )
+    }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+// Navigation rail (tablet)
+// ─────────────────────────────────────────────────────────────────────────────
+
+@Composable
+fun AdaptiveNavigationRail(hazeState: HazeState, selectedNavIndex : Int) {
+    NavigationRail(
+        modifier       = Modifier.fillMaxHeight().hazeEffect(hazeState, obsidianGlassStyle()).background(Color.Transparent),
+        containerColor = Color.Transparent,
+        header = { Icon(Icons.Rounded.ShoppingBag, null, tint = ObsidianTheme.accent) }
+    ) {
+        Column(Modifier.fillMaxHeight(), Arrangement.Center) {
+            NavigationRailItem(true,  {}, { Icon(Icons.Filled.Home,         null) }, label = { Text("Home") })
+            NavigationRailItem(false, {}, { Icon(Icons.Filled.ShoppingCart,  null) }, label = { Text("Cart") })
+            NavigationRailItem(false, {}, { Icon(Icons.Filled.Person,        null) }, label = { Text("Profile") })
+        }
     }
 }

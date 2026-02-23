@@ -26,6 +26,7 @@ sealed interface Screen {
         val brand: String,
         val price: String,
         val originalPrice: String?,
+        val isFavorite: Boolean,
         val rating: Float,
         val imageUrl: String,
         val isNew: Boolean,

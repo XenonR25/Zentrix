@@ -29,13 +29,9 @@ data class CartItem(
     val product : Product,
     val quantity : Int = 1
 )
-data class productRecord(
-    @SerializedName("products")
-    val products : List<Product>
-)
 
 data class JsonBinResponse(
     @SerializedName("record")
-    val record : productRecord
+    val record : List<Product>
 )
 

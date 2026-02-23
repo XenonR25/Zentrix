@@ -23,7 +23,7 @@ class ProductRepositoryImpl @Inject constructor() : ProductRepository {
             val response = api.getProducts()
 
             if (response.isSuccessful) {
-                val products = response.body()?.record?.products
+                val products = response.body()?.record
                 if (products != null && products.isNotEmpty()) {
                     NetworkResult.Success(products)
                 }
