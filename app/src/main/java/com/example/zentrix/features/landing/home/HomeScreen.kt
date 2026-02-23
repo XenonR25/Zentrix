@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
@@ -41,6 +43,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.ShoppingBag
@@ -53,6 +56,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
@@ -90,6 +94,10 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 import coil.compose.AsyncImage
+import com.example.zentrix.features.cart.CartViewModel
+import com.example.zentrix.features.favorites.FavoritesViewModel
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.HazeTint
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Obsidian Design Tokens
@@ -117,9 +125,9 @@ private val promoItems = listOf(
 )
 
 private val categories = listOf(
-    Category("All", "✦"), Category("Tops", "👕"), Category("Shoes", "👟"),
+    Category("All", "+"), Category("Tops", "👕"), Category("Shoes", "👟"),
     Category("Bags", "👜"), Category("Watches", "⌚"), Category("Jewellery", "💍"),
-    Category("Denim", "🧥")
+    Category("Denim", "🧥"), Category("Headphone",""),Category("Mobile",""),Category("Laptop",""),Category("Controller","")
 )
 
 
@@ -131,7 +139,7 @@ private val categories = listOf(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() , onSignOut : () -> Unit) {
+fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() ,onProductClick:(Product)-> Unit, onSignOut : () -> Unit, cartViewModel: CartViewModel = hiltViewModel(),favoritesViewModel: FavoritesViewModel = hiltViewModel()) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCat by remember { mutableIntStateOf(0) }
     val name by viewModel.userName.collectAsStateWithLifecycle()
@@ -200,34 +208,93 @@ fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() 
         // Error message
         uiState.errorMessage?.let { error ->
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = error,
-                        color = ObsidianTheme.textSecondary,
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center
+                modifier = Modifier.fillMaxSize().hazeSource(hazeState) // make content behind blurrable
+            ){
+                Box(
+                    modifier = Modifier.fillMaxSize().hazeEffect(
+                        state = hazeState,
+                        style = HazeStyle(tint = HazeTint(ObsidianTheme.background.copy(0.85f)),
+                                          blurRadius = 28.dp,
+                                          noiseFactor = 0.1f
+                            )
                     )
-                    Box(
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp)
+                    ,
+                    contentAlignment = Alignment.Center
+                ) {
+                    Surface(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(ObsidianTheme.accent.copy(alpha = 0.15f))
-                            .border(0.5.dp, ObsidianTheme.accent.copy(0.4f), RoundedCornerShape(12.dp))
-                            .clickable { viewModel.retry() }
-                            .padding(horizontal = 24.dp, vertical = 12.dp)
-                    ) {
-                        Text(
-                            "Retry",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = ObsidianTheme.accent
-                        )
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        shape = RoundedCornerShape(24.dp),
+                        color = Color.Transparent
+                    ){
+                        Box(
+                            modifier = Modifier
+                                .hazeEffect(state = hazeState,
+                                    style = HazeStyle(
+                                        tint = HazeTint(ObsidianTheme.surfaceElevated.copy(0.2f)),
+                                        blurRadius = 24.dp,
+                                        noiseFactor = 0.08f
+                        ))
+                                .border(width = 0.8.dp,
+                                brush = Brush.verticalGradient(
+                                    listOf(Color.White.copy(0.25f),Color.White.copy(0.05f))
+                                )
+                                    ,shape = RoundedCornerShape(24.dp)
+
+                                ).padding(32.dp)
+                        ){
+
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                // Error icon
+                                Icon(
+                                    Icons.Rounded.ErrorOutline,
+                                    contentDescription = null,
+                                    tint = ObsidianTheme.red,
+                                    modifier = Modifier.size(56.dp)
+                                )
+
+                                // Error title
+                                Text(
+                                    text = "Oops!",
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = ObsidianTheme.textPrimary
+                                )
+                                Text(
+                                    text = error,
+                                    color = ObsidianTheme.textSecondary,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(ObsidianTheme.accent.copy(alpha = 0.15f))
+                                        .border(0.5.dp, ObsidianTheme.accent.copy(0.4f), RoundedCornerShape(12.dp))
+                                        .clickable (
+                                            indication = null,
+                                            interactionSource = remember { MutableInteractionSource() }
+                                        ) { viewModel.retry() }
+                                        .padding(horizontal = 24.dp, vertical = 12.dp)
+                                ) {
+                                    Text(
+                                        "Retry",
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                                        color = ObsidianTheme.accent
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -679,24 +746,6 @@ private fun TagBadge(text: String, color: Color) {
 }
 
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Navigation rail (tablet)
-// ─────────────────────────────────────────────────────────────────────────────
-
-@Composable
-fun AdaptiveNavigationRail(hazeState: HazeState) {
-    NavigationRail(
-        modifier       = Modifier.fillMaxHeight().hazeEffect(hazeState, obsidianGlassStyle()).background(Color.Transparent),
-        containerColor = Color.Transparent,
-        header = { Icon(Icons.Rounded.ShoppingBag, null, tint = ObsidianTheme.accent) }
-    ) {
-        Column(Modifier.fillMaxHeight(), Arrangement.Center) {
-            NavigationRailItem(true,  {}, { Icon(Icons.Filled.Home,         null) }, label = { Text("Home") })
-            NavigationRailItem(false, {}, { Icon(Icons.Filled.ShoppingCart,  null) }, label = { Text("Cart") })
-            NavigationRailItem(false, {}, { Icon(Icons.Filled.Person,        null) }, label = { Text("Profile") })
-        }
-    }
-}
 
 
 
