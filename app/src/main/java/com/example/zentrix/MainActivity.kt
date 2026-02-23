@@ -97,7 +97,15 @@ class MainActivity : ComponentActivity() {
                             }
 
                             is Screen.Home -> NavEntry(screen){
-                                MainScaffold(windowSize = windowSizeClass.widthSizeClass) {_,hazeState ->
+                                MainScaffold(windowSize = windowSizeClass.widthSizeClass
+                                ,currentScreen = screen
+                                    ,onNavigate = {destination->
+                                        if(destination != screen){
+                                            navStack.clear()
+                                            navStack.add(destination)
+                                        }
+                                    }
+                                ) {_,hazeState ->
                                     HomeScreen(hazeState , onProductClick = {
                                         product ->
                                         navStack.add(
