@@ -13,11 +13,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
+import com.example.zentrix.domain.model.Product
 import com.example.zentrix.domain.model.Screen
 import com.example.zentrix.features.MainScaffold
 import com.example.zentrix.features.auth.AuthState
@@ -25,6 +26,9 @@ import com.example.zentrix.features.auth.AuthViewModel
 import com.example.zentrix.features.landing.home.HomeScreen
 import com.example.zentrix.features.auth.login.SignInScreen
 import com.example.zentrix.features.auth.signup.SignupScreen
+import com.example.zentrix.features.cart.CartScreen
+import com.example.zentrix.features.favorites.FavoritesScreen
+import com.example.zentrix.features.product.ProductDetailScreen
 import com.example.zentrix.ui.theme.ZentrixTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -94,8 +98,80 @@ class MainActivity : ComponentActivity() {
 
                             is Screen.Home -> NavEntry(screen){
                                 MainScaffold(windowSize = windowSizeClass.widthSizeClass) {_,hazeState ->
-                                    HomeScreen(hazeState , onSignOut = {authViewModel.signOut()})
+                                    HomeScreen(hazeState , onProductClick = {
+                                        product ->
+                                        navStack.add(
+                                            Screen.ProductDetails(
+                                                productId = product.id,
+                                                name = product.name,
+                                                brand = product.brand,
+                                                price = product.price,
+                                                originalPrice = product.originalPrice,
+                                                rating = product.rating,
+                                                isFavorite = product.isFavorite,
+                                                imageUrl = product.imageUrl,
+                                                isNew = product.isNew,
+                                                discount = product.discount
+                                            )
+                                        )
+                                    }, onSignOut = {authViewModel.signOut()})
                                 }
+                            }
+                            is Screen.ProductDetails -> NavEntry(screen) {
+                                val product = Product(
+                                    name = screen.name,
+                                    brand = screen.brand,
+                                    price = screen.price,
+                                    originalPrice = screen.originalPrice,
+                                    rating = screen.rating,
+                                    imageUrl = screen.imageUrl,
+                                    isFavorite = screen.isFavorite,
+                                    isNew = screen.isNew,
+                                    discount = screen.discount
+                                )
+                                ProductDetailScreen(product,onNavigateBack = {navStack.removeLast()})
+                            }
+                            is Screen.Cart -> NavEntry(screen) {
+                                MainScaffold(windowSize = windowSizeClass.widthSizeClass
+                                    ,currentScreen = screen
+                                    ,onNavigate = {destination->
+                                    if(destination != screen){
+                                        navStack.clear()
+                                        navStack.add(destination)
+                                    }
+                                    }) { _, hazeState ->
+                                    CartScreen(hazeState = hazeState)
+
+                            }
+                            }
+                            is Screen.Favorites -> NavEntry(screen) {
+                             MainScaffold(windowSize = windowSizeClass.widthSizeClass,
+                                 currentScreen = screen,
+                                 onNavigate = {destination ->
+                                     if(destination != screen){
+                                         navStack.clear()
+                                         navStack.add(destination)
+                                     }
+                                 }
+                             ) { _,hazeState ->
+                                 FavoritesScreen(hazeState = hazeState,
+                                     onProductClick= {product->
+                                         navStack.add(
+                                             Screen.ProductDetails(
+                                                 productId = product.id,
+                                                 name = product.name,
+                                                 brand = product.brand,
+                                                 price = product.price,
+                                                 originalPrice = product.originalPrice,
+                                                 rating = product.rating,
+                                                 isFavorite = product.isFavorite,
+                                                 imageUrl = product.imageUrl,
+                                                 isNew = product.isNew,
+                                                 discount = product.discount
+                                             )
+                                         )
+                                     })
+                             }
                             }
                             else -> NavEntry(screen){
                                 Text("Unknown Destination")
