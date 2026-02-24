@@ -26,6 +26,10 @@ class CartViewModel @Inject   constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _hasNewState = MutableStateFlow(false)
+    val hasNewState : StateFlow<Boolean> = _hasNewState.asStateFlow()
+
+
     init{
         loadCartFromFirebase()
     }
@@ -61,6 +65,7 @@ class CartViewModel @Inject   constructor(
             // Add new item
             currentItems.add(CartItem(product = product,1))
         }
+        _hasNewState.value = true
         _cartItems.value = currentItems
         calculateTotalPrice()
         syncToFireStore()
@@ -104,9 +109,13 @@ class CartViewModel @Inject   constructor(
         return _cartItems.value.any { it.product.id == productId }
     }
 
+    fun markCartAsViewed(){
+        _hasNewState.value = false
+    }
+
     private fun calculateTotalPrice() {
         val total = _cartItems.value.sumOf {item ->
-        val priceString = item.product.price.replace("$","").replace(",","")
+        val priceString = item.product.price.replace("£","").replace(",","")
         val price = priceString.toDoubleOrNull() ?: 0.0
         price * item.quantity
         }

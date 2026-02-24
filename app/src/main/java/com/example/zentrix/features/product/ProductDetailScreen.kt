@@ -55,7 +55,6 @@ import com.example.zentrix.domain.model.Product
 import com.example.zentrix.features.cart.CartViewModel
 import com.example.zentrix.features.favorites.FavoritesViewModel
 import com.example.zentrix.ui.theme.ObsidianTheme
-import com.google.android.gms.common.Feature
 
 @Composable
 fun ProductDetailScreen(
@@ -110,7 +109,9 @@ fun ProductDetailScreen(
                 Row(
                    modifier = Modifier
                        .fillMaxWidth()
-                       .padding(16.dp),
+                       .padding(16.dp)
+                       .padding(top = 54.dp)
+                    ,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ){
                     //Back button
@@ -253,7 +254,8 @@ fun ProductDetailScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .height(90.dp),
+                .clip(RoundedCornerShape(24.dp))
+                .height(90.dp).padding(bottom = 50.dp),
             color = ObsidianTheme.surfaceElevated.copy(0.95f),
             tonalElevation = 8.dp,
             shadowElevation = 16.dp

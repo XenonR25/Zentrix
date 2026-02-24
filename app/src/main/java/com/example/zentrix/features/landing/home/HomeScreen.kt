@@ -92,8 +92,6 @@ import kotlin.math.abs
 import coil.compose.AsyncImage
 import com.example.zentrix.features.cart.CartViewModel
 import com.example.zentrix.features.favorites.FavoritesViewModel
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Obsidian Design Tokens

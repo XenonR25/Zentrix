@@ -21,6 +21,10 @@ class FavoritesViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _hasNewFavorite = MutableStateFlow(false)
+    val hasNewFavorite : StateFlow<Boolean> = _hasNewFavorite.asStateFlow()
+
+
     init{
         loadFavoritesFromFirestore()
     }
@@ -57,6 +61,7 @@ class FavoritesViewModel @Inject constructor(
             } else {
                 currentFavorites.add(product)
                 _favorites.value = currentFavorites
+                _hasNewFavorite.value = true // Set the flag to true
                 viewModelScope.launch {
                     repository.addFavorite(product)
                 }
@@ -75,6 +80,10 @@ class FavoritesViewModel @Inject constructor(
         viewModelScope.launch {
             repository.removeFavorite(productId)
         }
+    }
+
+    fun markFavoriteAsViewed(){
+        _hasNewFavorite.value = false
     }
 
 }
