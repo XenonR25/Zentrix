@@ -41,9 +41,6 @@ fun FavoritesScreen(
 ) {
     val favorites by viewModel.favorites.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.markFavoriteAsViewed()
-    }
 
     Box(
         modifier = Modifier

@@ -22,5 +22,5 @@ object ObsidianTheme {
     val textMuted       = Color(0xFF4E4D5C)
     val red             = Color(0xFFE8526A)
     val gold            = Color(0xFFCBA94E)
-    val green           = Color(0xFF4ECBA0)
+    val green           = Color(0xFF1E916C)
 }

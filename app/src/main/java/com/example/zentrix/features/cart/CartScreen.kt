@@ -52,9 +52,7 @@ fun CartScreen(
     val cartItems by viewModel.cartItems.collectAsStateWithLifecycle()
     val totalPrice by viewModel.totalPrice.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.markCartAsViewed()
-    }
+
 
     Box(modifier = Modifier
         .fillMaxSize()

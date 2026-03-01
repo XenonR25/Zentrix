@@ -157,7 +157,7 @@ fun FloatingGlassNavBar(hazeState: HazeState,
         Box(
             modifier = Modifier.fillMaxSize().clip(navShape).background(
                 Brush.radialGradient(
-                    colors = listOf(Color.White.copy(alpha = 0.7f), Color.Transparent),
+                    colors = listOf(ObsidianTheme.accent.copy(alpha = 0.3f), Color.Transparent),
                     radius = 400f)
             )
         )
@@ -185,7 +185,7 @@ fun FloatingGlassNavBar(hazeState: HazeState,
                         onClick     = { onNavigate(index) },
                         badge = when(index){
                             1 -> {
-                                if(hasNewFavorite && cartItem.isNotEmpty()){
+                                if(hasNewState && cartItem.isNotEmpty()){
                                     BadgeType.Count(cartItem.sumOf { it.quantity })
                                 } else {
                                     null

@@ -6,10 +6,13 @@ import com.example.zentrix.data.repository.FirestoreRepository
 import com.example.zentrix.domain.model.Product
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
@@ -22,7 +25,12 @@ class FavoritesViewModel @Inject constructor(
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _hasNewFavorite = MutableStateFlow(false)
-    val hasNewFavorite : StateFlow<Boolean> = _hasNewFavorite.asStateFlow()
+    val hasNewFavorite : StateFlow<Boolean> = _favorites.map{ it.isNotEmpty()}
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
 
 
     init{
@@ -71,9 +79,6 @@ class FavoritesViewModel @Inject constructor(
 
     }
 
-    fun isFavorite(productId : String) : Boolean {
-        return _favorites.value.any { it.id == productId }
-    }
 
     fun removeFavorite(productId: String){
         _favorites.value = _favorites.value.filter { it.id != productId }
@@ -82,8 +87,5 @@ class FavoritesViewModel @Inject constructor(
         }
     }
 
-    fun markFavoriteAsViewed(){
-        _hasNewFavorite.value = false
-    }
 
 }

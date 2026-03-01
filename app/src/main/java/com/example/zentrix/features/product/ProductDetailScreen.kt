@@ -50,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.zentrix.domain.model.Product
 import com.example.zentrix.features.cart.CartViewModel
@@ -63,8 +64,15 @@ fun ProductDetailScreen(
     cartViewModel: CartViewModel = hiltViewModel(),
     favoritesViewModel: FavoritesViewModel = hiltViewModel()
 ){
-    val isInCart by remember {derivedStateOf{cartViewModel.isInCart(product.id)}}
-    val isFavorite by remember {derivedStateOf{favoritesViewModel.isFavorite(product.id)}}
+    val cart by cartViewModel.cartItems.collectAsStateWithLifecycle()
+
+    val isInCart = cart.any{it.product.id == product.id}
+
+//    val isInCart by remember {derivedStateOf{cartViewModel.isInCart(product.id)}}
+    val favorites by favoritesViewModel.favorites.collectAsStateWithLifecycle()
+
+    val isFavorite = favorites.any{it.id == product.id}
+
 
     var showAddedToCart by remember { mutableStateOf(false) }
 
@@ -110,7 +118,7 @@ fun ProductDetailScreen(
                    modifier = Modifier
                        .fillMaxWidth()
                        .padding(16.dp)
-                       .padding(top = 54.dp)
+                       .padding(top = 32.dp)
                     ,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ){
@@ -255,7 +263,7 @@ fun ProductDetailScreen(
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
-                .height(90.dp).padding(bottom = 50.dp),
+                .height(90.dp).padding(bottom = 32.dp),
             color = ObsidianTheme.surfaceElevated.copy(0.95f),
             tonalElevation = 8.dp,
             shadowElevation = 16.dp
@@ -287,7 +295,7 @@ fun ProductDetailScreen(
               )
               Box(
                   modifier = Modifier
-                      .height(56.dp)
+                      .height(48.dp)
                       .clip(RoundedCornerShape(16.dp))
                       .background(buttonColor)
                       .clickable(
@@ -297,7 +305,7 @@ fun ProductDetailScreen(
                           cartViewModel.addToCart(product)
                           showAddedToCart = true
                       }
-                      .padding(horizontal = 32.dp),
+                      .padding(horizontal = 24.dp),
                   contentAlignment = Alignment.Center
               ){
                Row(

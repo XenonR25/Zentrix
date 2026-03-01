@@ -105,10 +105,6 @@ class CartViewModel @Inject   constructor(
         }
     }
 
-    fun isInCart (productId:String) : Boolean {
-        return _cartItems.value.any { it.product.id == productId }
-    }
-
     fun markCartAsViewed(){
         _hasNewState.value = false
     }

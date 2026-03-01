@@ -53,6 +53,7 @@ import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -90,6 +91,7 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 import coil.compose.AsyncImage
+import com.example.zentrix.core.designsystem.FilterBottomSheet
 import com.example.zentrix.features.cart.CartViewModel
 import com.example.zentrix.features.favorites.FavoritesViewModel
 
@@ -119,9 +121,16 @@ private val promoItems = listOf(
 )
 
 private val categories = listOf(
-    Category("All", "+"), Category("Tops", "👕"), Category("Shoes", "👟"),
-    Category("Bags", "👜"), Category("Watches", "⌚"), Category("Jewellery", "💍"),
-    Category("Denim", "🧥"), Category("Headphone",""),Category("Mobile",""),Category("Laptop",""),Category("Controller","")
+    Category("All", "+"),
+    Category("Tops", "👕"),
+    Category("Shoes", "👟"),
+    Category("Bags", "👜"),
+    Category("Watches", "⌚"),
+    Category("Jewellery", "💍"),
+    Category("Denim", "🧥"),
+    Category("Headphone", "🎧"),
+    Category("Laptop", "💻"),
+    Category("Controller", "🎮")
 )
 
 
@@ -131,14 +140,16 @@ private val categories = listOf(
 // HomeScreen
 // ─────────────────────────────────────────────────────────────────────────────
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() ,onProductClick:(Product)-> Unit, onSignOut : () -> Unit, cartViewModel: CartViewModel = hiltViewModel(),favoritesViewModel: FavoritesViewModel = hiltViewModel()) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedCat by remember { mutableIntStateOf(0) }
     val name by viewModel.userName.collectAsStateWithLifecycle()
-
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var showFilterSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyVerticalStaggeredGrid(
@@ -158,7 +169,7 @@ fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() 
             }
 
             item(span = StaggeredGridItemSpan.FullLine) {
-                ObsidianSearchBar(query = searchQuery, onQueryChange = { searchQuery = it })
+                ObsidianSearchBar(query = searchQuery, onQueryChange = { searchQuery = it }, onFilterClick = { showFilterSheet = true })
             }
 
             item(span = StaggeredGridItemSpan.FullLine) {
@@ -189,6 +200,10 @@ fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() 
                     onClick = {onProductClick(uiState.products[index])},
                     favoritesViewModel = favoritesViewModel
                     )
+            }
+
+            if(showFilterSheet){
+                FilterBottomSheet(){}
             }
         }
 
@@ -465,7 +480,10 @@ private fun GreetingHeader(name : String, onSignOut: () -> Unit) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun ObsidianSearchBar(query: String, onQueryChange: (String) -> Unit) {
+private fun ObsidianSearchBar(query: String, onQueryChange: (String) -> Unit, onFilterClick: () -> Unit) {
+
+    var isFilter by remember {mutableStateOf(false)}
+
     val shape = RoundedCornerShape(18.dp)
     Box(
         modifier = Modifier
@@ -499,11 +517,18 @@ private fun ObsidianSearchBar(query: String, onQueryChange: (String) -> Unit) {
                     .clip(RoundedCornerShape(10.dp))
                     .background(ObsidianTheme.accentSoft)
                     .border(0.5.dp, ObsidianTheme.accent.copy(0.3f), RoundedCornerShape(10.dp))
-                    .padding(horizontal = 10.dp, vertical = 7.dp),
+                    .padding(horizontal = 10.dp, vertical = 7.dp)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ){
+                        onFilterClick()
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Rounded.Tune, "Filter", tint = ObsidianTheme.accent, modifier = Modifier.size(17.dp))
             }
+
         }
     }
 }
