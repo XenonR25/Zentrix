@@ -147,6 +147,7 @@ fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() 
     var selectedCat by remember { mutableIntStateOf(0) }
     val name by viewModel.userName.collectAsStateWithLifecycle()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val filterState by viewModel.filterState.collectAsStateWithLifecycle()
 
     var showFilterSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
@@ -200,10 +201,6 @@ fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() 
                     onClick = {onProductClick(uiState.products[index])},
                     favoritesViewModel = favoritesViewModel
                     )
-            }
-
-            if(showFilterSheet){
-                FilterBottomSheet(){}
             }
         }
 
@@ -340,7 +337,23 @@ fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() 
                 }
             }
         }
+        if(showFilterSheet){
+            FilterBottomSheet(
+                sheetState = sheetState,
+                currentFilter = filterState,
+                onApplyFilter = {filter ->
+                    viewModel.updateFilter(filter)
+                },
+                onClearFilter = {
+                    viewModel.clearFilters()
+                },
+                onDismissRequest = {
+                    showFilterSheet = false
+                }
+            )
+        }
     }
+
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -506,7 +519,7 @@ private fun ObsidianSearchBar(query: String, onQueryChange: (String) -> Unit, on
             Icon(Icons.Rounded.Search, null, tint = ObsidianTheme.textMuted, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(12.dp))
             Text(
-                text     = if (query.isEmpty()) "Search items, brands…" else query,
+                text     = query.ifEmpty { "Search items, brands…" },
                 color    = if (query.isEmpty()) ObsidianTheme.textMuted else ObsidianTheme.textPrimary,
                 style    = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f)
