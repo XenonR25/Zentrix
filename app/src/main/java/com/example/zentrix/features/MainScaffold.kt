@@ -79,7 +79,7 @@ fun MainScaffold(windowSize: WindowWidthSizeClass,
     val hazeState  = rememberHazeState()
     val isExpanded = windowSize == WindowWidthSizeClass.Expanded
 
-    val paddingValues = if(!isExpanded) 114.dp else 0.dp
+    val paddingValues = if(!isExpanded) 52.dp else 0.dp
 
     val selectedNavIndex = when(currentScreen){
         is Screen.Home -> 0

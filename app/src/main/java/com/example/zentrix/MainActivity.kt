@@ -29,6 +29,7 @@ import com.example.zentrix.features.auth.signup.SignupScreen
 import com.example.zentrix.features.cart.CartScreen
 import com.example.zentrix.features.favorites.FavoritesScreen
 import com.example.zentrix.features.product.ProductDetailScreen
+import com.example.zentrix.features.profile.ProfileScreen
 import com.example.zentrix.ui.theme.ZentrixTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -180,6 +181,22 @@ class MainActivity : ComponentActivity() {
                                          )
                                      })
                              }
+                            }
+                            is Screen.Profile -> NavEntry(screen) {
+                                MainScaffold(
+                                    windowSize = windowSizeClass.widthSizeClass,
+                                    currentScreen = screen,
+                                    onNavigate = { destination ->
+                                        if(destination != screen){
+                                            navStack.clear()
+                                            navStack.add(destination)
+                                        }
+                                    }
+                                ) {paddingValues ,hazeState ->
+                                    ProfileScreen(hazeState = hazeState, onSignOut = {authViewModel.signOut()}, paddingValues= paddingValues)
+
+
+                                }
                             }
                             else -> NavEntry(screen){
                                 Text("Unknown Destination")

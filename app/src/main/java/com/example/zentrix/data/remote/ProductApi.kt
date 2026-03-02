@@ -5,6 +5,6 @@ import retrofit2.Response
 import retrofit2.http.GET
 
 interface ProductApi {
-    @GET("699fce2b43b1c97be99f0e09")
+    @GET("69a55bdbae596e708f57652a")
     suspend fun getProducts() : Response<JsonBinResponse>
 }

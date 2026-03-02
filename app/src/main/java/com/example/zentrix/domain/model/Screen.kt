@@ -19,6 +19,8 @@ sealed interface Screen {
     @Serializable
     data object Favorites : Screen
 
+
+
     @Serializable
     data class ProductDetails(
         val productId : String,

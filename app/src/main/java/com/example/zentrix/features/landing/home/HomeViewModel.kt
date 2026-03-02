@@ -3,7 +3,6 @@ package com.example.zentrix.features.landing.home
 import android.os.Message
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.zentrix.core.designsystem.FilterSection
 import com.example.zentrix.data.repository.NetworkResult
 import com.example.zentrix.data.repository.ProductRepositoryImpl
 import com.example.zentrix.domain.model.FilterState

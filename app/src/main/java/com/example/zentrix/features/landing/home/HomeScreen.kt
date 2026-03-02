@@ -347,7 +347,7 @@ fun HomeScreen(hazeState: HazeState , viewModel: HomeViewModel= hiltViewModel() 
                 onClearFilter = {
                     viewModel.clearFilters()
                 },
-                onDismissRequest = {
+                onDismiss = {
                     showFilterSheet = false
                 }
             )
